@@ -56,9 +56,16 @@ def parse_set_of_forces(num_atoms, forces_filenames, verbose=True):
         if verbose:
             sys.stdout.write("%d. " % (i + 1))
 
+        # TRY CP2K > 2025.1 Format first
         forces = iter_collect_forces(
-            filename, num_atoms, "# Atom   Kind   Element", [3, 4, 5]
-        )
+            filename, num_atoms, " FORCES|   Atom     x               y               z               |f|", [2, 3, 4]
+            )
+
+        if not check_forces(forces, num_atoms, filename, verbose=verbose): 
+            # Try old format < CP2K 2025.1
+            forces = iter_collect_forces(
+                filename, num_atoms, "# Atom   Kind   Element", [3, 4, 5]
+            )
 
         if not check_forces(forces, num_atoms, filename, verbose=verbose):
             return []  # if one file is invalid, the whole thing is broken
